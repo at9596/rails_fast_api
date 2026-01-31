@@ -1,0 +1,14 @@
+<%# app/views/computations/new.html.erb %>
+<h2>Upload Image for FastAPI Processing</h2>
+
+<%= form_with url: process_image_path, local: true, multipart: true, data: { turbo: false } do |f| %>
+  <div>
+    <%= f.label :image, "Choose an image" %>
+    <%= f.file_field :image %>
+  </div>
+  <%= f.submit "Upload and Blur" %>
+<% end %>
+
+<% if flash[:notice] %>
+  <p style="color: green;"><%= flash[:notice] %></p>
+<% end %>

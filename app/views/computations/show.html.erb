@@ -1,0 +1,8 @@
+<h1>Computation Details</h1>
+<p>ID: <%= @computation.id %></p>
+
+<% if @computation.csv_file.attached? %>
+  <p>File attached: <%= @computation.csv_file.filename %></p>
+<% end %>
+
+<%= link_to "Back to Edit", edit_computation_path(@computation) %>

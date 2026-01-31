@@ -1,0 +1,2 @@
+web: bin/rails server -p 3000
+python: cd fast_api_service && ./venv/bin/uvicorn main:app --reload --port 8000

@@ -1,0 +1,4 @@
+#!/usr/bin/env ruby
+
+# Use 'system' to call the foreman binary directly from the shell path
+system "foreman start -f Procfile.dev"

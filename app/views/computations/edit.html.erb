@@ -1,0 +1,43 @@
+<%# app/views/computations/edit.html.erb %>
+
+<h2>Analyze Dataset for Computation #<%= @computation.id %></h2>
+
+<%= form_with model: @computation, local: true, multipart: true, data: { turbo: false } do |f| %>
+  <div class="field">
+    <%= f.label :csv_file, "Select CSV Data File" %>
+    <%= f.file_field :csv_file %>
+  </div>
+  <%= f.submit "Run Heavy Analysis" %>
+<% end %>
+
+<hr>
+
+<% if @csv_analysis %>
+  <div id="analysis-results" style="background: #f0fdf4; padding: 20px; border: 2px solid #16a34a; border-radius: 8px; margin-top: 20px;">
+    <h3 style="color: #16a34a; margin-top: 0;">📊 Python Analysis Results</h3>
+    <table style="width: 100%; border-collapse: collapse;">
+      <tr>
+        <td><strong>Rows Processed:</strong></td>
+        <td><%= @csv_analysis["row_count"] %></td>
+      </tr>
+      <tr>
+        <td><strong>Column Analyzed:</strong></td>
+        <td><code><%= @csv_analysis["column_analyzed"] %></code></td>
+      </tr>
+      <tr style="font-size: 1.2em; color: #1e40af;">
+        <td><strong>Mean (Average):</strong></td>
+        <td><%= @csv_analysis["mean"]&.round(4) %></td>
+      </tr>
+      <tr>
+        <td><strong>Max Value:</strong></td>
+        <td><%= @csv_analysis["max"] %></td>
+      </tr>
+      <tr>
+        <td><strong>Min Value:</strong></td>
+        <td><%= @csv_analysis["min"] %></td>
+      </tr>
+    </table>
+  </div>
+<% elsif flash[:alert] %>
+  <p style="color: red;"><%= flash[:alert] %></p>
+<% end %>

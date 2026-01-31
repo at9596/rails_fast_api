@@ -1,0 +1,17 @@
+<%# app/views/computations/index.html.erb %>
+<h1>System Dashboard</h1>
+
+<div style="border: 1px solid #333; padding: 20px; border-radius: 8px;">
+  <p><strong>Service Status:</strong> <%= @data["status"] %></p>
+  <p><strong>Version:</strong> <%= @data["version"] %></p>
+  
+  <h3>Available Tools:</h3>
+  <ul>
+    <% @data["capabilities"].each do |tool| %>
+      <li><%= tool %></li>
+    <% end %>
+  </ul>
+</div>
+
+<br>
+<%= link_to "Go to Image Processor", new_computation_path %>
