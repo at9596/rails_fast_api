@@ -71,3 +71,5 @@ gem "faraday", "~> 2.14"
 gem "faraday-multipart", "~> 1.2"
 
 gem "csv", "~> 3.3"
+
+gem "httparty", "~> 0.24.2"

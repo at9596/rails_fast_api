@@ -1,54 +1,47 @@
-from fastapi import FastAPI, Response, UploadFile, File
-from PIL import Image, ImageFilter
-import pandas as pd
-import io
-import numpy as np
+from fastapi import FastAPI, Response, UploadFile, File, Body, HTTPException
+import ollama
+from pydantic import BaseModel
+from services.config import APP_METADATA
+from services.data_service import DataService
+from services.image_service import ImageService
+from services.ai_service import AIService
 app = FastAPI()
+
+class LlamaRequest(BaseModel):
+    prompt: str
+
+@app.post("/generate")
+async def generate(request: LlamaRequest):
+    text_result = AIService.generate_response(request.prompt)
+    
+    return {"text": text_result}
+
+@app.post("/chat")
+async def chat(messages: list = Body(...)):
+    # Expects format: [{"role": "user", "content": "hello"}]
+    response = ollama.chat(
+        model='llama3.2',
+        messages=messages
+    )
+    return {"message": response['message']['content']}
 
 @app.post("/process_image")
 async def process_image(file: UploadFile = File(...)):
-    # Read image into memory
-    request_object_content = await file.read()
-    img = Image.open(io.BytesIO(request_object_content))
+    image_data = await file.read()
 
-    # Perform a heavy operation (like a Gaussian Blur)
-    process_imaged = img.filter(ImageFilter.GaussianBlur(radius=15))
+    processed_bytes = ImageService.apply_gaussian_blur(image_data)
 
-    # Convert back to bytes to send to Rails
-    img_byte_arr = io.BytesIO()
-    # process_imaged.save(img_byte_arr, format='WEBP')
-    process_imaged.save(img_byte_arr, format="PNG")
-
-    # Return the raw image bytes instead of JSON
-    return Response(content=img_byte_arr.getvalue(), media_type="image/png")
-
+    return Response(content=processed_bytes, media_type="image/png")
 
 @app.get("/compute")
 def get_status():
-    return {
-        "status": "FastAPI is Online",
-        "capabilities": ["Image Blurring", "Gaussian Filter"],
-        "version": "1.0.0"
-    }
+    return APP_METADATA
 
 @app.post("/analyze-csv")
 async def analyze_csv(file: UploadFile = File(...)):
-    df = pd.read_csv(file.file)
+    result = DataService.get_column_statistics(file.file)
     
-    # Filter for numeric columns
-    numeric_df = df.select_dtypes(include=[np.number])
-    
-    if numeric_df.empty:
-        return {"error": "No numeric columns found in this CSV."}
-
-    column_name = numeric_df.columns[0]
-    data = numeric_df[column_name].values
-
-    return {
-        "column_analyzed": column_name,
-        "row_count": len(df),
-        "mean": float(np.mean(data)),
-        "std_dev": float(np.std(data)),
-        "max": float(np.max(data)),
-        "min": float(np.min(data))
-    }
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+        
+    return result
